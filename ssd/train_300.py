@@ -69,6 +69,7 @@ def get_args() -> argparse.Namespace:
 
     # SageMaker paremeters
     parser.add_argument('--ckpt_path', type=str, default='./ckpt')
+    parser.add_argument('--output_path', type=str, default='./output')
     parser.add_argument('--data_dir', type=str, default='../../datasets/VOCdevkit')
 
     return parser.parse_args()
@@ -254,9 +255,26 @@ def train(args: argparse.Namespace, current_epoch: int, ckpt: ModelCheckpoint, m
                                initial_epoch=current_epoch)
 
 
+def save(model: Model, output_path: str):
+    # save the whole model
+    output_model_path = os.path.join(output_path, "result")
+    os.makedirs(output_model_path, exist_ok=True)
+    model.save(os.path.join(output_model_path, 'models.h5'))
+
+    # save the trained weight
+    output_weight_path = os.path.join(output_path, "weights")
+    os.makedirs(output_weight_path, exist_ok=True)
+    model.save_weights(os.path.join(output_weight_path, 'weights.h5'))
+
+
 def main():
     args = get_args()
     weights_path, current_epoch, ckpt = restore_checkpoint(args.ckpt_path)
     model = build_model(args, weights_path)
     train_generator, val_generator, val_dataset_size = get_dataset(args, model)
     train(args, current_epoch, ckpt, model, val_dataset_size, train_generator, val_generator)
+    save(model, args.output_path)
+
+
+if __name__ == '__main__':
+    main()

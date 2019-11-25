@@ -72,7 +72,14 @@ def get_args() -> argparse.Namespace:
     parser.add_argument('--output_path', type=str, default='./output')
     parser.add_argument('--data_dir', type=str, default='../../datasets/VOCdevkit')
 
-    return parser.parse_args()
+    args = parser.parse_args()
+    args_dict = vars(args)
+    args.aspect_ratios = []
+
+    for i in range(N_PREDICTOR_LAYERS):
+        args.aspect_ratios.append(args_dict['aspect_ratio_layer_{}'.format(i+1)])
+
+    return args
 
 
 def restore_checkpoint(ckpt_path: str) -> Tuple[str, int, ModelCheckpoint]:
